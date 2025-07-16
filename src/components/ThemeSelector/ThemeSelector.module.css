@@ -1,0 +1,41 @@
+.swatchDropdown {
+  position: relative;
+  line-height: 0;
+}
+
+.swatchBtn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+.swatchCircle {
+  display: inline-block;
+  width: 1.5rem;
+  height: 1.5rem;
+  border: 2px solid #fff;
+  border-radius: 50%;
+}
+
+.swatchMenu {
+  position: absolute;
+  top: 2rem;
+  right: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 2rem);
+  gap: 0.5rem;
+  padding: 0.5rem;
+  background: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  z-index: 20;
+}
+
+.swatchItem {
+  width: 2rem;
+  height: 2rem;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+}

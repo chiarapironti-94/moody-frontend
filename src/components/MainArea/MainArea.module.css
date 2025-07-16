@@ -1,0 +1,6 @@
+.mainArea {
+  flex: 1;
+  padding: 1.5rem;
+  overflow-y: auto;
+  background-color: var(--color-primary-tint);
+}
