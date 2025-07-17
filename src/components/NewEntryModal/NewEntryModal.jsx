@@ -2,20 +2,20 @@ import { useReducer, useEffect } from 'react';
 import styles from './NewEntryModal.module.css';
 
 const initialState = {
-  mood: '',
-  rating: 1,
-  color: '',
+  mood: 'happy',
+  rating: 5,
+  color: '#8a2be2',
   note: '',
 };
 
 function reducer(state, action) {
   switch (action.type) {
-    case 'SET_FIELD':
+    case 'SET':
       return { ...state, [action.field]: action.value };
     case 'RESET':
       return initialState;
     default:
-      return state;
+      throw new Error();
   }
 }
 
@@ -29,17 +29,8 @@ export default function NewEntryModal({ isOpen, onClose, onSave }) {
 
   if (!isOpen) return null;
 
-  const handleOverlayClick = (e) => {
+  const handleOverlay = (e) => {
     if (e.target === e.currentTarget) onClose();
-  };
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    dispatch({
-      type: 'SET_FIELD',
-      field: name,
-      value: name === 'rating' ? +value : value,
-    });
   };
 
   const handleSubmit = (e) => {
@@ -49,52 +40,87 @@ export default function NewEntryModal({ isOpen, onClose, onSave }) {
   };
 
   return (
-    <div className={styles.overlay} onClick={handleOverlayClick}>
-      <div className={styles.modal}>
-        <h2>Nuova Entry</h2>
+    <div className={styles.overlay} onClick={handleOverlay}>
+      <div
+        className={styles.modal}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="new-entry-title"
+      >
+        <h2 id="new-entry-title">Nuova Entry</h2>
         <form onSubmit={handleSubmit} className={styles.form}>
-          <label>
-            Umore
-            <select name="mood" value={mood} onChange={handleChange}>
-              <option value="happy">😊 Happy</option>
-              <option value="neutral">😐 Neutral</option>
-              <option value="sad">😢 Sad</option>
-            </select>
-          </label>
+          {/* 1) Mood selector: 3 faccine-only */}
+          <div className={styles.moodRow}>
+            {['happy', 'neutral', 'sad'].map((m) => (
+              <button
+                key={m}
+                type="button"
+                className={`${styles.moodBtn} ${
+                  m === mood ? styles.active : ''
+                }`}
+                onClick={() =>
+                  dispatch({ type: 'SET', field: 'mood', value: m })
+                }
+              >
+                {m === 'happy' ? '😊' : m === 'neutral' ? '😐' : '😢'}
+              </button>
+            ))}
+          </div>
 
-          <label>
-            Rating ({rating})
-            <input
-              type="range"
-              name="rating"
-              min="1"
-              max="10"
-              value={rating}
-              onChange={handleChange}
-            />
-          </label>
+          {/* 2) Rating + numero */}
+          <div className={styles.formRow}>
+            <label htmlFor="rating">Rating</label>
+            <div className={styles.sliderWrap}>
+              <input
+                id="rating"
+                name="rating"
+                type="range"
+                min="1"
+                max="10"
+                value={rating}
+                onChange={(e) =>
+                  dispatch({
+                    type: 'SET',
+                    field: 'rating',
+                    value: +e.target.value,
+                  })
+                }
+              />
+              <span className={styles.sliderValue}>{rating}</span>
+            </div>
+          </div>
 
-          <label>
-            Colore
+          {/* 3) Color picker */}
+          <div className={styles.formRow}>
+            <label htmlFor="color">Colore</label>
             <input
-              type="color"
+              id="color"
               name="color"
+              type="color"
               value={color}
-              onChange={handleChange}
+              onChange={(e) =>
+                dispatch({ type: 'SET', field: 'color', value: e.target.value })
+              }
+              className={styles.colorInput}
             />
-          </label>
+          </div>
 
-          <label>
-            Note
+          {/* 4) Note */}
+          <div className={styles.formRow}>
+            <label htmlFor="note">Note</label>
             <textarea
+              id="note"
               name="note"
-              rows="3"
+              rows="4"
               value={note}
-              onChange={handleChange}
+              onChange={(e) =>
+                dispatch({ type: 'SET', field: 'note', value: e.target.value })
+              }
               placeholder="Scrivi qualcosa…"
             />
-          </label>
+          </div>
 
+          {/* Azioni */}
           <div className={styles.actions}>
             <button type="button" onClick={onClose}>
               Annulla
