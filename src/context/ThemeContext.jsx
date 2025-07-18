@@ -39,12 +39,14 @@ export function ThemeProvider({ children }) {
     const light = tinycolor(primary).lighten(20).toString();
     const dark = tinycolor(primary).darken(15).toString();
     const tint = tinycolor(primary).lighten(37).toString();
+    const tintLight = tinycolor(primary).lighten(45).toString();
     const darkText = tinycolor(primary).darken(40).toString();
     const root = document.documentElement;
     root.style.setProperty('--color-primary', primary);
     root.style.setProperty('--color-primary-light', light);
     root.style.setProperty('--color-primary-dark', dark);
     root.style.setProperty('--color-primary-tint', tint);
+    root.style.setProperty('--color-primary-tint-light', tintLight);
     root.style.setProperty('--text-primary-dark', darkText);
   }, [primary]);
 
