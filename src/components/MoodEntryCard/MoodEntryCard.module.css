@@ -1,0 +1,68 @@
+.card {
+  display: flex;
+  background: #fff;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  margin-bottom: 1rem;
+}
+
+.accent {
+  flex: 0 0 0.5rem;
+}
+
+.content {
+  padding: 1rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.emoji {
+  font-size: 1.5rem;
+}
+
+.date {
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.note {
+  font-size: 1rem;
+  color: #374151;
+  line-height: 1.4;
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ratingBar {
+  flex: 1;
+  height: 0.5rem;
+  background: var(--color-primary-tint);
+  border-radius: 0.25rem;
+  overflow: hidden;
+  margin-right: 0.5rem;
+}
+
+.ratingFill {
+  height: 100%;
+  background: var(--color-primary);
+}
+
+.ratingValue {
+  font-size: 0.875rem;
+  color: #111827;
+  min-width: 2.5rem;
+  text-align: right;
+}
