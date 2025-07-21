@@ -2,6 +2,12 @@ import { useState, useReducer, useEffect, useRef } from 'react';
 import { CirclePicker } from 'react-color';
 import styles from './NewEntryModal.module.css';
 
+const MOOD_OPTIONS = [
+  { emoji: '😊', value: 'happy' },
+  { emoji: '😐', value: 'neutral' },
+  { emoji: '😢', value: 'sad' },
+];
+
 const initialState = {
   mood: '',
   rating: 5,
@@ -20,7 +26,13 @@ function reducer(state, action) {
   }
 }
 
-export default function NewEntryModal({ isOpen, onClose, onSave }) {
+export default function NewEntryModal({
+  isOpen,
+  onClose,
+  onSave,
+  saving = false,
+  saveError = null,
+}) {
   const [state, dispatch] = useReducer(reducer, initialState);
   const [step, setStep] = useState(1);
   const overlayRef = useRef();
@@ -38,9 +50,9 @@ export default function NewEntryModal({ isOpen, onClose, onSave }) {
     if (e.target === overlayRef.current) onClose();
   }
 
-  function handleSave() {
+  function handleSubmit(e) {
+    e.preventDefault();
     onSave(state);
-    onClose();
   }
 
   return (
@@ -52,19 +64,20 @@ export default function NewEntryModal({ isOpen, onClose, onSave }) {
       <div className={styles.modal}>
         <h2>Nuova Entry</h2>
 
-        {step === 1 ? (
-          <form className={styles.form} onSubmit={(e) => e.preventDefault()}>
+        {/* Step 1: non-form for mood, rating, note */}
+        {step === 1 && (
+          <div className={styles.form}>
             <div className={styles.moodRow}>
-              {['😊', '😐', '😢'].map((m) => (
+              {MOOD_OPTIONS.map(({ emoji, value }) => (
                 <button
-                  key={m}
+                  key={value}
                   type="button"
-                  className={state.mood === m ? styles.active : ''}
+                  className={state.mood === value ? styles.active : ''}
                   onClick={() =>
-                    dispatch({ type: 'SET', field: 'mood', value: m })
+                    dispatch({ type: 'SET', field: 'mood', value })
                   }
                 >
-                  {m}
+                  {emoji}
                 </button>
               ))}
             </div>
@@ -85,6 +98,15 @@ export default function NewEntryModal({ isOpen, onClose, onSave }) {
                       value: +e.target.value,
                     })
                   }
+                  style={{
+                    background: `linear-gradient(
+                      to right,
+                      var(--color-primary) ${((state.rating - 1) / 9) * 100}%,
+                      var(--color-primary-tint) ${
+                        ((state.rating - 1) / 9) * 100
+                      }%
+                    )`,
+                  }}
                 />
                 <span className={styles.sliderValue}>{state.rating}</span>
               </div>
@@ -105,62 +127,74 @@ export default function NewEntryModal({ isOpen, onClose, onSave }) {
                 placeholder="Scrivi qualcosa…"
               />
             </div>
-          </form>
-        ) : (
-          <div className={styles.form}>
+
+            <div className={styles.actions}>
+              <button
+                type="button"
+                className={styles.nextBtn}
+                onClick={() => setStep(2)}
+                disabled={!state.mood}
+              >
+                Avanti
+              </button>
+              <button
+                type="button"
+                className={styles.cancelBtn}
+                onClick={onClose}
+              >
+                Annulla
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Step 2: form wrapper for color picker + save */}
+        {step === 2 && (
+          <form className={styles.form} onSubmit={handleSubmit}>
             <div className={styles.colorPickerContainer}>
               <label htmlFor="color">Colore</label>
               <CirclePicker
                 id="color"
                 color={state.color}
                 onChangeComplete={(col) =>
-                  dispatch({
-                    type: 'SET',
-                    field: 'color',
-                    value: col.hex,
-                  })
+                  dispatch({ type: 'SET', field: 'color', value: col.hex })
                 }
                 circleSize={28}
                 circleSpacing={12}
               />
             </div>
-          </div>
+
+            {saveError && (
+              <div className={styles.errorMsg}>
+                Errore durante il salvataggio: {saveError.message}
+              </div>
+            )}
+
+            <div className={styles.actions}>
+              <button
+                type="button"
+                className={styles.backBtn}
+                onClick={() => setStep(1)}
+              >
+                Indietro
+              </button>
+              <button
+                type="submit"
+                className={styles.saveBtn}
+                disabled={saving}
+              >
+                {saving ? 'Salvando…' : 'Salva'}
+              </button>
+              <button
+                type="button"
+                className={styles.cancelBtn}
+                onClick={onClose}
+              >
+                Annulla
+              </button>
+            </div>
+          </form>
         )}
-
-        <div className={styles.actions}>
-          {step === 2 && (
-            <button
-              type="button"
-              className={styles.backBtn}
-              onClick={() => setStep(1)}
-            >
-              Indietro
-            </button>
-          )}
-
-          {step === 1 ? (
-            <button
-              type="button"
-              className={styles.nextBtn}
-              onClick={() => setStep(2)}
-              disabled={!state.mood}
-            >
-              Avanti
-            </button>
-          ) : (
-            <button
-              type="button"
-              className={styles.saveBtn}
-              onClick={handleSave}
-            >
-              Salva
-            </button>
-          )}
-
-          <button type="button" className={styles.cancelBtn} onClick={onClose}>
-            Annulla
-          </button>
-        </div>
       </div>
     </div>
   );
