@@ -1,6 +1,7 @@
 .mainArea {
-  flex: 1;
+  display: grid;
+  gap: 1rem;
+  /* each card at least 16rem wide, then fill remaining space */
+  grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
   padding: 1.5rem;
-  overflow-y: auto;
-  background-color: var(--color-primary-tint);
 }
