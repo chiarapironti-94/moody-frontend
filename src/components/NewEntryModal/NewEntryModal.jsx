@@ -1,4 +1,4 @@
-import { useState, useReducer, useEffect, useRef } from 'react';
+import { useReducer, useEffect, useRef, useState } from 'react';
 import { CirclePicker } from 'react-color';
 import styles from './NewEntryModal.module.css';
 
@@ -46,14 +46,25 @@ export default function NewEntryModal({
 
   if (!isOpen) return null;
 
-  function handleOverlayClick(e) {
+  const handleOverlayClick = (e) => {
     if (e.target === overlayRef.current) onClose();
-  }
+  };
 
-  function handleSubmit(e) {
+  const handleFormSubmit = (e) => {
     e.preventDefault();
-    onSave(state);
-  }
+    if (step === 1) {
+      if (state.mood) setStep(2);
+    } else {
+      onSave({
+        mood: state.mood,
+        rating: state.rating,
+        note: state.note,
+        color: state.color,
+      });
+      onClose();
+      dispatch({ type: 'RESET' });
+    }
+  };
 
   return (
     <div
@@ -61,98 +72,77 @@ export default function NewEntryModal({
       ref={overlayRef}
       onClick={handleOverlayClick}
     >
-      <div className={styles.modal}>
-        <h2>Nuova Entry</h2>
+      <div className={styles.modal} role="dialog" aria-modal="true">
+        <h2>Nuova Entry — Step {step} di 2</h2>
+        <form className={styles.form} onSubmit={handleFormSubmit}>
+          {step === 1 && (
+            <>
+              <div className={styles.moodRow}>
+                {MOOD_OPTIONS.map(({ emoji, value }) => (
+                  <button
+                    key={value}
+                    type="button"
+                    className={state.mood === value ? styles.active : ''}
+                    onClick={() =>
+                      dispatch({ type: 'SET', field: 'mood', value })
+                    }
+                  >
+                    {emoji}
+                  </button>
+                ))}
+              </div>
 
-        {/* Step 1: non-form for mood, rating, note */}
-        {step === 1 && (
-          <div className={styles.form}>
-            <div className={styles.moodRow}>
-              {MOOD_OPTIONS.map(({ emoji, value }) => (
-                <button
-                  key={value}
-                  type="button"
-                  className={state.mood === value ? styles.active : ''}
-                  onClick={() =>
-                    dispatch({ type: 'SET', field: 'mood', value })
-                  }
-                >
-                  {emoji}
-                </button>
-              ))}
-            </div>
+              <div className={styles.formRow}>
+                <label htmlFor="rating">Rating</label>
+                <div className={styles.sliderWrap}>
+                  <input
+                    id="rating"
+                    type="range"
+                    min="1"
+                    max="10"
+                    value={state.rating}
+                    onChange={(e) =>
+                      dispatch({
+                        type: 'SET',
+                        field: 'rating',
+                        value: +e.target.value,
+                      })
+                    }
+                    style={{
+                      background: `linear-gradient(to right, var(--color-primary) ${
+                        ((state.rating - 1) / 9) * 100
+                      }%, var(--color-primary-tint) ${
+                        ((state.rating - 1) / 9) * 100
+                      }%)`,
+                    }}
+                  />
+                  <span className={styles.sliderValue}>{state.rating}</span>
+                </div>
+              </div>
 
-            <div className={styles.formRow}>
-              <label htmlFor="rating">Rating</label>
-              <div className={styles.sliderWrap}>
-                <input
-                  id="rating"
-                  type="range"
-                  min="1"
-                  max="10"
-                  value={state.rating}
+              <div className={styles.formRow}>
+                <label htmlFor="note">Note</label>
+                <textarea
+                  id="note"
+                  value={state.note}
                   onChange={(e) =>
                     dispatch({
                       type: 'SET',
-                      field: 'rating',
-                      value: +e.target.value,
+                      field: 'note',
+                      value: e.target.value,
                     })
                   }
-                  style={{
-                    background: `linear-gradient(
-                      to right,
-                      var(--color-primary) ${((state.rating - 1) / 9) * 100}%,
-                      var(--color-primary-tint) ${
-                        ((state.rating - 1) / 9) * 100
-                      }%
-                    )`,
-                  }}
+                  placeholder="Scrivi qualcosa…"
                 />
-                <span className={styles.sliderValue}>{state.rating}</span>
               </div>
-            </div>
+            </>
+          )}
 
-            <div className={styles.formRow}>
-              <label htmlFor="note">Note</label>
-              <textarea
-                id="note"
-                value={state.note}
-                onChange={(e) =>
-                  dispatch({
-                    type: 'SET',
-                    field: 'note',
-                    value: e.target.value,
-                  })
-                }
-                placeholder="Scrivi qualcosa…"
-              />
-            </div>
-
-            <div className={styles.actions}>
-              <button
-                type="button"
-                className={styles.nextBtn}
-                onClick={() => setStep(2)}
-                disabled={!state.mood}
-              >
-                Avanti
-              </button>
-              <button
-                type="button"
-                className={styles.cancelBtn}
-                onClick={onClose}
-              >
-                Annulla
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Step 2: form wrapper for color picker + save */}
-        {step === 2 && (
-          <form className={styles.form} onSubmit={handleSubmit}>
+          {step === 2 && (
             <div className={styles.colorPickerContainer}>
-              <label htmlFor="color">Colore</label>
+              <label htmlFor="color">
+                Which color does your mood feel like?
+              </label>
               <CirclePicker
                 id="color"
                 color={state.color}
@@ -160,17 +150,17 @@ export default function NewEntryModal({
                   dispatch({ type: 'SET', field: 'color', value: col.hex })
                 }
                 circleSize={28}
-                circleSpacing={12}
+                styles={{ default: { picker: { margin: '0' } } }}
               />
             </div>
+          )}
 
-            {saveError && (
-              <div className={styles.errorMsg}>
-                Errore durante il salvataggio: {saveError.message}
-              </div>
-            )}
+          {saveError && (
+            <div className={styles.errorMsg}>Errore: {saveError.message}</div>
+          )}
 
-            <div className={styles.actions}>
+          <div className={styles.actions}>
+            {step === 2 && (
               <button
                 type="button"
                 className={styles.backBtn}
@@ -178,23 +168,23 @@ export default function NewEntryModal({
               >
                 Indietro
               </button>
-              <button
-                type="submit"
-                className={styles.saveBtn}
-                disabled={saving}
-              >
-                {saving ? 'Salvando…' : 'Salva'}
-              </button>
-              <button
-                type="button"
-                className={styles.cancelBtn}
-                onClick={onClose}
-              >
-                Annulla
-              </button>
-            </div>
-          </form>
-        )}
+            )}
+            <button
+              type="submit"
+              className={step === 1 ? styles.nextBtn : styles.saveBtn}
+              disabled={step === 1 ? !state.mood : saving}
+            >
+              {step === 1 ? 'Avanti' : saving ? 'Salvando…' : 'Salva'}
+            </button>
+            <button
+              type="button"
+              className={styles.cancelBtn}
+              onClick={onClose}
+            >
+              Annulla
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );
