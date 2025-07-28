@@ -29,3 +29,9 @@ export const CREATE_MOOD_ENTRY = gql`
     }
   }
 `;
+
+export const DELETE_MOOD_ENTRY = gql`
+  mutation DeleteMoodEntry($id: ID!) {
+    deleteMoodEntry(id: $id)
+  }
+`;

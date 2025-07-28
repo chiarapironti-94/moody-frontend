@@ -66,3 +66,33 @@
   min-width: 2.5rem;
   text-align: right;
 }
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* make it a tiny, unstyled icon button */
+.deleteBtn {
+  background: none;
+  border: none;
+  padding: 0;
+  color: #6b7280; /* same as your date color */
+  cursor: pointer;
+  transition: color 150ms ease, transform 100ms ease;
+}
+
+.deleteBtn:hover {
+  transform: scale(1.1);
+}
+
+.card.deleting {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.deleteBtn:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
