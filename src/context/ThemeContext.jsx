@@ -4,6 +4,8 @@ import {
   useEffect,
   useLayoutEffect,
   useState,
+  useCallback,
+  useMemo,
 } from 'react';
 import tinycolor from 'tinycolor2';
 import { useQuery, useMutation } from '@apollo/client';
@@ -50,22 +52,32 @@ export function ThemeProvider({ children }) {
     root.style.setProperty('--text-primary-dark', darkText);
   }, [primary]);
 
-  const setPrimary = async (color) => {
-    setPrimaryState(color);
-    try {
-      await updatePrefs({ variables: { themeColor: color } });
-    } catch (e) {
-      console.error('Errore aggiornamento preferenze:', e);
-    }
-  };
+  const setPrimary = useCallback(
+    async (color) => {
+      setPrimaryState(color);
+      try {
+        await updatePrefs({ variables: { themeColor: color } });
+      } catch (e) {
+        console.error('Errore aggiornamento preferenze:', e);
+      }
+    },
+    [updatePrefs]
+  );
+
+  const contextValue = useMemo(
+    () => ({
+      primary,
+      setPrimary,
+      available: AVAILABLE_COLORS,
+    }),
+    [primary, setPrimary]
+  );
 
   if (loading) return null;
   if (error) return <div>Errore caricamento preferenze</div>;
 
   return (
-    <ThemeContext.Provider
-      value={{ primary, setPrimary, available: AVAILABLE_COLORS }}
-    >
+    <ThemeContext.Provider value={contextValue}>
       {children}
     </ThemeContext.Provider>
   );
